@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MindForge - 升级你的思维</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- 关键CSS - 防止液态玻璃闪烁 -->
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: 
+          linear-gradient(to bottom, #fff 0%, #fff 40%, rgba(255, 255, 255, 0) 100%),
+          linear-gradient(to right, #0ed2da, #5f29c7);
+      }
+      /* 预设置 backdrop-filter 相关属性，避免重绘闪烁 */
+      .liquid-glass-wrapper,
+      .liquid-glass-card,
+      .frosted-glass-card,
+      .frosted-glass-sidebar,
+      .liquid-glass-cover {
+        will-change: transform;
+        transform: translateZ(0);
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+      }
+      /* 隐藏未加载完成的内容 */
+      #root:empty {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- SVG 液态玻璃滤镜定义 -->
+    <svg style="display: none; position: absolute; width: 0; height: 0;">
+      <defs>
+        <filter id="liquid_glass_filter" x="0%" y="0%" width="100%" height="100%" filterUnits="objectBoundingBox">
+          <feDisplacementMap in="SourceGraphic" in2="SourceGraphic" scale="80" xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+      </defs>
+    </svg>
+    
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
