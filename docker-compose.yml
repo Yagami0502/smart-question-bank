@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # MySQL 数据库
   mysql:
@@ -11,12 +9,19 @@ services:
       MYSQL_DATABASE: smart_question_bank
       MYSQL_USER: app_user
       MYSQL_PASSWORD: app_password
-    ports:
-      - "3306:3306"
+    # No host port publish — the api reaches MySQL over the internal compose network.
+    # Host 3306 is already used by a local MySQL; expose here only if external access is needed.
+    expose:
+      - "3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./server/db/schema.sql:/docker-entrypoint-initdb.d/init.sql
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
 
   # 后端 API 服务
   api:
@@ -34,8 +39,12 @@ services:
       DB_PASSWORD: app_password
       DB_NAME: smart_question_bank
       PORT: 3001
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost}
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
 
   # 前端 Nginx 服务
   web:

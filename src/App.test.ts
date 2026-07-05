@@ -1,4 +1,4 @@
-import { act, createElement } from 'react';
+import { act, createElement, type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createRoot, type Root } from 'react-dom/client';
 import App from './App';
@@ -78,7 +78,7 @@ vi.mock('./lib/database', () => ({
 }));
 
 vi.mock('./components/Layout', () => ({
-  default: ({ children }: { children: unknown }) => createElement('div', { 'data-testid': 'app-shell' }, children),
+  default: ({ children }: { children: ReactNode }) => createElement('div', { 'data-testid': 'app-shell' }, children),
 }));
 
 vi.mock('./components/ui/ConfirmDialog', () => ({
@@ -147,7 +147,7 @@ describe('App auth logout event', () => {
   let root: Root;
 
   beforeEach(() => {
-    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+    (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
     vi.clearAllMocks();
     localStorage.clear();
     localStorage.setItem('mindforge_access_token', 'valid-token');

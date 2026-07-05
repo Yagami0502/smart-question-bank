@@ -38,10 +38,10 @@ export function parseExcel(buffer: ArrayBuffer): { headers: string[]; rows: Pars
   const worksheet = workbook.Sheets[firstSheetName];
   
   // 转换为 JSON
-  const jsonData = XLSX.utils.sheet_to_json<ParsedRow>(worksheet, {
+  const jsonData = XLSX.utils.sheet_to_json<string[]>(worksheet, {
     header: 1,
     defval: ''
-  }) as string[][];
+  });
   
   if (jsonData.length === 0) {
     return { headers: [], rows: [] };

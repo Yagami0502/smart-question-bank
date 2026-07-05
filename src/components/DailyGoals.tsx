@@ -3,7 +3,7 @@
  * 设置和追踪每日学习目标
  */
 import { useState, useEffect } from 'react';
-import { X, Target, CheckCircle, Circle, Flame, Trophy, Clock, BookOpen, Zap, Gift, Settings, Plus, Trash2 } from 'lucide-react';
+import { X, Target, CheckCircle, Trophy, Clock, BookOpen, Zap, Gift, Settings } from 'lucide-react';
 import AnimatedModal from './ui/AnimatedModal';
 import Button from './ui/Button';
 import { cn } from '../lib/utils';

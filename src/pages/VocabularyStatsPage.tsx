@@ -130,42 +130,60 @@ export default function VocabularyStatsPage({ bookId, bookName, onBack }: Vocabu
       .slice(0, 5);
   }, [wrongWords]);
 
-  // 模拟学习热力图数据（实际应从数据库获取）
+  // 学习热力图数据（近12周，基于真实进度记录的最近复习时间）
   const heatmapMatrix = useMemo(() => {
+    const activityByDate = new Map<string, number>();
+    progress.forEach(p => {
+      if (!p.lastReview) return;
+      const key = new Date(p.lastReview).toISOString().split('T')[0];
+      activityByDate.set(key, (activityByDate.get(key) || 0) + 1);
+    });
+
     const weeks: Array<Array<{ date: string; count: number }>> = [];
     const today = new Date();
-    
     for (let week = 11; week >= 0; week--) {
       const weekData: Array<{ date: string; count: number }> = [];
       for (let day = 0; day < 7; day++) {
         const date = new Date(today);
         date.setDate(date.getDate() - (week * 7 + (6 - day)));
         const dateStr = date.toISOString().split('T')[0];
-        // 模拟数据，实际应从数据库获取
-        const count = Math.random() > 0.6 ? Math.floor(Math.random() * 50) : 0;
-        weekData.push({ date: dateStr, count });
+        weekData.push({ date: dateStr, count: activityByDate.get(dateStr) || 0 });
       }
       weeks.push(weekData);
     }
-    
+
     const maxCount = Math.max(...weeks.flat().map(d => d.count), 1);
     return { weeks, maxCount };
-  }, []);
+  }, [progress]);
 
-  // 学习趋势数据（模拟）
+  // 学习趋势数据（近7天，基于真实进度记录）
   const trendData = useMemo(() => {
+    const learnedByDate = new Map<string, number>();
+    const reviewedByDate = new Map<string, number>();
+    progress.forEach(p => {
+      if (p.createdAt) {
+        const key = new Date(p.createdAt).toISOString().split('T')[0];
+        learnedByDate.set(key, (learnedByDate.get(key) || 0) + 1);
+      }
+      if (p.lastReview) {
+        const key = new Date(p.lastReview).toISOString().split('T')[0];
+        reviewedByDate.set(key, (reviewedByDate.get(key) || 0) + 1);
+      }
+    });
+
     const data = [];
     for (let i = 6; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
+      const key = date.toISOString().split('T')[0];
       data.push({
         day: date.toLocaleDateString('zh-CN', { weekday: 'short' }),
-        learned: Math.floor(Math.random() * 30) + 5,
-        reviewed: Math.floor(Math.random() * 50) + 10,
+        learned: learnedByDate.get(key) || 0,
+        reviewed: reviewedByDate.get(key) || 0,
       });
     }
     return data;
-  }, []);
+  }, [progress]);
 
   if (loading) {
     return (

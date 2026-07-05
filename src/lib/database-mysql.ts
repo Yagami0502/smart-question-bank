@@ -47,6 +47,10 @@ function toCard(c: any): Card {
     lapses: c.lapses || 0,
     lastReview: c.lastReview || c.last_review,
     createdAt: c.createdAt || c.created_at || Date.now(),
+    errorCount: c.errorCount ?? c.error_count ?? 0,
+    correctCount: c.correctCount ?? c.correct_count ?? 0,
+    totalReviews: (c.errorCount ?? c.error_count ?? 0) + (c.correctCount ?? c.correct_count ?? 0),
+    due: c.due ?? c.dueDate,
   };
 }
 

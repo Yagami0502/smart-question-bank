@@ -356,7 +356,7 @@ export default function VocabularyImportPage({ bookId, bookName, onBack }: Vocab
         id: `${bookId}-${startIndex + i}`,
       }));
 
-      await wordOperations.bulkAdd(wordsToImport);
+      await wordOperations.bulkAdd(bookId, wordsToImport);
 
       // 更新用户词库记录
       const userVocabs = await userVocabularyOperations.getAll();

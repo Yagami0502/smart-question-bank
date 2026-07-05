@@ -71,6 +71,11 @@ export interface Card {
   lapses: number;
   lastReview?: number;
   createdAt: number;
+  // 派生统计字段（后端 /api/cards 返回，供错题分析与搜索视图使用）
+  errorCount?: number;
+  correctCount?: number;
+  totalReviews?: number;
+  due?: number;
 }
 
 // 复习日志接口

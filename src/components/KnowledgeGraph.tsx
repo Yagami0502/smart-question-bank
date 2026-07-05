@@ -207,7 +207,7 @@ export default function KnowledgeGraph({ isOpen, onClose, deckId }: KnowledgeGra
                 style={{ transform: `scale(${zoom})`, transformOrigin: 'center' }}
               >
                 {/* 连接线 */}
-                {nodePositions.map((pos1, i) =>
+                {nodePositions.map((pos1) =>
                   pos1.node.connections.slice(0, 3).map((connId, j) => {
                     const pos2 = nodePositions.find(p => p.node.id === connId);
                     if (!pos2) return null;
@@ -227,7 +227,7 @@ export default function KnowledgeGraph({ isOpen, onClose, deckId }: KnowledgeGra
                 )}
 
                 {/* 节点 */}
-                {nodePositions.map((pos, index) => {
+                {nodePositions.map((pos) => {
                   const size = getNodeSize(pos.node.count);
                   const isSelected = selectedNode?.id === pos.node.id;
                   return (

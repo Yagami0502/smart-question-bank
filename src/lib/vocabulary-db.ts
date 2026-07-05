@@ -144,7 +144,7 @@ export const wordOperations = {
   },
 
   // 获取单个单词
-  async getById(id: string): Promise<Word | undefined> {
+  async getById(_id: string): Promise<Word | undefined> {
     // 单词详情通过词库单词列表获取，暂不单独实现
     console.warn('getById 暂未实现，请使用 getByBookId');
     return undefined;
@@ -206,7 +206,7 @@ export const userVocabularyOperations = {
   },
 
   // 添加词库到我的词库
-  async add(bookId: string, bookName: string): Promise<string> {
+  async add(bookId: string, _bookName: string): Promise<string> {
     const result = await apiRequest<{ id: string }>('/user/books', {
       method: 'POST',
       body: JSON.stringify({ bookId }),
@@ -244,7 +244,7 @@ function transformUserVocabulary(raw: any): UserVocabulary {
 // ============================================
 export const wordProgressOperations = {
   // 获取单词学习进度
-  async get(wordId: string): Promise<WordProgress | undefined> {
+  async get(_wordId: string): Promise<WordProgress | undefined> {
     // 暂不单独实现，通过 getByBookId 获取
     return undefined;
   },

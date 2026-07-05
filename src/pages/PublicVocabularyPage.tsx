@@ -2,7 +2,6 @@
  * 公共词库页面 - 展示内置词库和用户分享的词库
  */
 import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   Search,
   Download,

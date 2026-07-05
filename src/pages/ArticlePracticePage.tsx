@@ -2,14 +2,12 @@
  * 文章练习页面 - 支持跟打和默写模式
  */
 import { useState, useEffect, useRef, useCallback } from 'react';
+import type { ReactElement } from 'react';
 import {
   ArrowLeft,
   Volume2,
   VolumeX,
   Eye,
-  EyeOff,
-  Check,
-  X,
   ChevronRight,
   ChevronLeft,
   Keyboard,
@@ -203,7 +201,7 @@ export default function ArticlePracticePage({ article, onBack }: ArticlePractice
     const actual = userInput;
     
     // 简单的字符级别对比
-    const result: JSX.Element[] = [];
+    const result: ReactElement[] = [];
     const maxLen = Math.max(expected.length, actual.length);
     
     for (let i = 0; i < maxLen; i++) {

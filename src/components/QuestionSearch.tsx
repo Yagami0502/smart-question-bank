@@ -24,8 +24,8 @@ interface Question {
   deckId: string;
   content: string | { text: string };
   type: string;
-  options: { id: string; text: string; content?: { text: string } }[];
-  correctAnswer: string | string[];
+  options: { id: string; text?: string; content?: { text: string } }[];
+  correctAnswer?: string | string[];
   explanation?: string;
   tags?: string[];
   difficulty?: number;
@@ -44,9 +44,9 @@ interface Card {
   deckId: string;
   questionId: string;
   state: string;
-  due: number;
-  errorCount: number;
-  correctCount: number;
+  due?: number;
+  errorCount?: number;
+  correctCount?: number;
 }
 
 interface QuestionSearchProps {
@@ -123,7 +123,7 @@ export default function QuestionSearch({
     const card = cards.find(c => c.questionId === questionId);
     if (!card) return 'new';
     if (card.state === 'new') return 'new';
-    if (card.errorCount > card.correctCount) return 'difficult';
+    if ((card.errorCount ?? 0) > (card.correctCount ?? 0)) return 'difficult';
     if (card.state === 'review' || card.state === 'learning') return 'learning';
     return 'mastered';
   };
@@ -132,8 +132,9 @@ export default function QuestionSearch({
   const getErrorRate = (questionId: string) => {
     const card = cards.find(c => c.questionId === questionId);
     if (!card) return 0;
-    const total = card.errorCount + card.correctCount;
-    return total > 0 ? card.errorCount / total : 0;
+    const errorCount = card.errorCount ?? 0;
+    const total = errorCount + (card.correctCount ?? 0);
+    return total > 0 ? errorCount / total : 0;
   };
 
   // 筛选和排序

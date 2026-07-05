@@ -9,7 +9,6 @@ import {
   Volume2,
   Search,
   AlertTriangle,
-  RotateCcw,
   Check,
 } from 'lucide-react';
 import Button from '../components/ui/Button';

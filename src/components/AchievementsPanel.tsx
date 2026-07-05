@@ -3,7 +3,7 @@
  * 展示用户获得的成就和徽章
  */
 import { useState, useEffect } from 'react';
-import { Trophy, Star, Flame, Target, Zap, Award, Crown, Medal, BookOpen, Brain, Clock, TrendingUp, X, Lock } from 'lucide-react';
+import { Trophy, Star, Flame, Target, Zap, Award, Crown, Medal, BookOpen, Brain, Clock, X, Lock } from 'lucide-react';
 import AnimatedModal from './ui/AnimatedModal';
 import { cn } from '../lib/utils';
 import { db } from '../lib/database';

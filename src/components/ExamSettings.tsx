@@ -2,7 +2,7 @@
  * 模拟考试设置组件
  */
 import { useState } from 'react';
-import { Settings, Clock, Shuffle, FileText, Zap, Flame, Skull, AlertTriangle } from 'lucide-react';
+import { Clock, FileText, Zap, Flame, Skull, AlertTriangle } from 'lucide-react';
 import { Modal, ModalContent, ModalFooter } from './ui/Modal';
 import Button from './ui/Button';
 import { cn } from '../lib/utils';
@@ -93,7 +93,7 @@ interface ExamSettingsProps {
   deckId?: string;
 }
 
-export default function ExamSettings({ isOpen, onClose, onStart, maxQuestions = 500, deckId }: ExamSettingsProps) {
+export default function ExamSettings({ isOpen, onClose, onStart, maxQuestions = 500, deckId: _deckId }: ExamSettingsProps) {
   const [selectedPreset, setSelectedPreset] = useState<string>('normal');
   const [customMode, setCustomMode] = useState(false);
   const [config, setConfig] = useState<ExamConfig>(PRESETS.normal.config);

@@ -32,7 +32,7 @@ import type { Deck, PracticeMode } from '../types';
 import { cn } from '../lib/utils';
 
 interface MyDecksPageProps {
-  onNavigate: (view: string, deck?: Deck) => void;
+  onNavigate: (view: string, deck?: Deck & { filter?: string }) => void;
   onStartPractice: (deck: Deck, mode: PracticeMode) => void;
 }
 

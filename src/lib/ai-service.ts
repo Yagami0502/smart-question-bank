@@ -648,7 +648,7 @@ export async function convertSingleToMulti(
   questionContent: string,
   options: string[],
   correctAnswer: string,
-  originalExplanation?: string
+  _originalExplanation?: string
 ): Promise<ConvertedMultiQuestion | null> {
   // 计算新的正确答案（除了原正确答案以外的所有选项）
   const allLetters = options.map((_, i) => String.fromCharCode(65 + i));

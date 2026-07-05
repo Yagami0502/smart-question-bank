@@ -95,9 +95,12 @@ export default function ErrorAnalysis({ isOpen, onClose, deckId }: ErrorAnalysis
         .slice(0, 5)
         .map(card => {
           const question = questions.find(q => q.id === card.questionId);
+          const contentText = typeof question?.content === 'string'
+            ? question.content
+            : question?.content?.text || '未知题目';
           return {
             questionId: card.questionId,
-            content: question?.content || '未知题目',
+            content: contentText,
             errorCount: card.errorCount || 0,
           };
         });
@@ -374,7 +377,7 @@ export default function ErrorAnalysis({ isOpen, onClose, deckId }: ErrorAnalysis
                       <div className="p-4 rounded-xl bg-gray-50">
                         <h3 className="text-sm font-medium mb-4 text-gray-900">近14天错题趋势</h3>
                         <div className="flex items-end gap-1 h-32">
-                          {stats.errorTrend.map((d, i) => {
+                          {stats.errorTrend.map((d) => {
                             const errorRate = d.totalCount > 0 ? (d.errorCount / d.totalCount) * 100 : 0;
                             const height = Math.max(8, errorRate);
                             return (

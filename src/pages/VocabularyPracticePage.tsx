@@ -24,7 +24,6 @@ import {
 } from 'lucide-react';
 import Button from '../components/ui/Button';
 import { Card, CardContent } from '../components/ui/Card';
-import { Progress } from '../components/ui/Progress';
 import { dialog } from '../components/ui/ConfirmDialog';
 import { speechService, type VoiceType } from '../lib/speech-service';
 import { keyboardSound } from '../lib/keyboard-sound';

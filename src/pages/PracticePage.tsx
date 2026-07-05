@@ -1,12 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useLiveQuery } from '../hooks/useAsyncQuery';
-import { 
-  ArrowLeft, 
-  Clock, 
-  CheckCircle, 
+import {
+  ArrowLeft,
+  Clock,
+  CheckCircle,
   XCircle,
   ChevronRight,
-  Trophy,
   Target,
   Flame,
   Brain,
@@ -14,40 +13,24 @@ import {
   BookmarkCheck,
   Zap,
   GraduationCap,
-  FileText,
   AlertTriangle,
   Timer,
-  Pause,
-  Play,
-  SkipForward,
   Volume2,
   VolumeX,
   Keyboard,
   Star,
-  TrendingUp,
   Award,
-  Coffee,
-  Eye,
-  EyeOff,
   Flag,
-  MessageSquare,
-  Share2,
-  Download,
-  Settings,
-  HelpCircle,
-  Lightbulb,
-  BarChart3,
   Sparkles,
   RefreshCw
 } from 'lucide-react';
 import Button from '../components/ui/Button';
 import { Card, CardContent } from '../components/ui/Card';
-import { Progress, CircularProgress } from '../components/ui/Progress';
+import { CircularProgress } from '../components/ui/Progress';
 import { useAppStore } from '../stores/appStore';
-import { questionOperations, db } from '../lib/database';
+import { questionOperations } from '../lib/database';
 import { favoriteOperations } from '../lib/database-mysql';
 import { cn, formatDuration } from '../lib/utils';
-import type { Option } from '../types';
 
 interface PracticePageProps {
   onBack: () => void;
@@ -136,7 +119,7 @@ export default function PracticePage({ onBack }: PracticePageProps) {
   const [textAnswer, setTextAnswer] = useState(''); // 简答题文本答案
   const [fillAnswers, setFillAnswers] = useState<string[]>([]); // 填空题答案数组
   const [showAnswer, setShowAnswer] = useState(false);
-  const [startTime, setStartTime] = useState(Date.now());
+  const [startTime] = useState(Date.now());
   const [elapsedTime, setElapsedTime] = useState(0);
   const [sessionComplete, setSessionComplete] = useState(false);
   const [sessionStats, setSessionStats] = useState<{
@@ -154,25 +137,19 @@ export default function PracticePage({ onBack }: PracticePageProps) {
   
   // 新增功能状态
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const [showHint, setShowHint] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
+  const [, setShowHint] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
-  const [questionNote, setQuestionNote] = useState('');
-  const [showNoteInput, setShowNoteInput] = useState(false);
   const [comboCount, setComboCount] = useState(0);
   const [maxCombo, setMaxCombo] = useState(0);
   const [xpGained, setXpGained] = useState(0);
-  const [showSettings, setShowSettings] = useState(false);
-  const [fontSize, setFontSize] = useState<'small' | 'medium' | 'large'>('medium');
   const [examTimeLeft, setExamTimeLeft] = useState(0);
   const [examAnswers, setExamAnswers] = useState<Map<string, string[]>>(new Map());
   const [showExamReview, setShowExamReview] = useState(false);
-  const [currentStreak, setCurrentStreak] = useState(0);
   const [markedQuestions, setMarkedQuestions] = useState<Set<string>>(new Set());
   const [showQuestionNav, setShowQuestionNav] = useState(false);
   const [examSubmitted, setExamSubmitted] = useState(false);
-  const [examStartTime, setExamStartTime] = useState<number | null>(null);
+  const [, setExamStartTime] = useState<number | null>(null);
   const examStartTimeRef = useRef<number | null>(null);
   const [examResults, setExamResults] = useState<{
     answers: Map<string, { 
@@ -811,10 +788,6 @@ export default function PracticePage({ onBack }: PracticePageProps) {
     nextCard();
   };
 
-
-  const isCorrect = (optionId: string) => {
-    return currentQuestion?.options.find(o => o.id === optionId)?.isCorrect;
-  };
 
   const isSelected = (optionId: string) => {
     return selectedOptions.includes(optionId);

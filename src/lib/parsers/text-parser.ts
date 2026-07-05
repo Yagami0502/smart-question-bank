@@ -4,7 +4,7 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
-import type { Question, Option, ImportResult, ImportError, QuestionType } from '../../types';
+import type { Question, Option, ImportResult, QuestionType } from '../../types';
 
 /**
  * Aiken 格式解析器
