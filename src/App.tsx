@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLiveQuery } from './hooks/useAsyncQuery';
-import { db } from './lib/database';
+import { db, questionOperations } from './lib/database';
+import { wrongQuestionOperations } from './lib/database-mysql';
 import { useAppStore } from './stores/appStore';
 import { isLoggedIn, logout, AUTH_LOGOUT_EVENT, type User } from './lib/auth';
 import { useModals } from './hooks/useModals';
@@ -121,7 +122,6 @@ function App() {
   const deckQuestions = useLiveQuery(
     async () => {
       if (!selectedDeck || !isAuthenticated) return [];
-      const { questionOperations } = await import('./lib/database');
       return questionOperations.getByDeckId(selectedDeck.id);
     },
     [selectedDeck?.id, isAuthenticated]
@@ -401,7 +401,7 @@ function App() {
         <WrongBookModal isOpen onClose={() => close('wrongBook')}
           onPractice={async (questionIds) => {
             if (questionIds.length === 0) return;
-            const wrongQuestions = await import('./lib/database-mysql').then(m => m.wrongQuestionOperations.getAll());
+            const wrongQuestions = await wrongQuestionOperations.getAll();
             const firstWrong = wrongQuestions.find(wq => questionIds.includes(wq.questionId));
             if (firstWrong) {
               await startPractice(firstWrong.deckId, 'cram', { questionIds, limit: questionIds.length });

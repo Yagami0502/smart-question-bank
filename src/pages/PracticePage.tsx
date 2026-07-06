@@ -30,6 +30,7 @@ import { CircularProgress } from '../components/ui/Progress';
 import { useAppStore } from '../stores/appStore';
 import { questionOperations } from '../lib/database';
 import { favoriteOperations } from '../lib/database-mysql';
+import { convertSingleToMulti } from '../lib/ai-service';
 import { cn, formatDuration } from '../lib/utils';
 
 interface PracticePageProps {
@@ -222,7 +223,6 @@ export default function PracticePage({ onBack }: PracticePageProps) {
         
         setConversionProgress({ current: 0, total: toConvert.length });
         
-        const { convertSingleToMulti } = await import('../lib/ai-service');
         const newConverted = new Map<string, any>();
         
         // 辅助函数：安全获取文本内容

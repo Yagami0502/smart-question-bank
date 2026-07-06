@@ -29,9 +29,9 @@ export interface UserAISettings {
 
 // 默认 AI 配置
 const DEFAULT_AI_CONFIG: AIConfig = {
-  baseUrl: 'https://aifast.site',
-  model: 'gemini-3-pro-preview',
-  apiKey: 'sk-kV5ZxaEhYRyMi5iHO4GFuTv9UcsLvYRT8rsbIN2kuBsQCs5N',
+  baseUrl: (import.meta.env.VITE_AI_BASE_URL as string | undefined) || 'https://api.openai.com',
+  model: (import.meta.env.VITE_AI_MODEL as string | undefined) || 'gpt-4o-mini',
+  apiKey: '',
   maxRetries: 3,
   retryDelay: 2000,
 };
@@ -112,6 +112,16 @@ export function initAIConfig(): void {
 // 初始化配置
 initAIConfig();
 
+function hasAIKey(): boolean {
+  return Boolean(AI_CONFIG.apiKey?.trim());
+}
+
+function assertAIConfigured(): void {
+  if (!hasAIKey()) {
+    throw new Error('请先在“设置 > AI 设置”中配置 API Key，再使用 AI 解析。');
+  }
+}
+
 // AI解析后的题目结构
 export interface AIParseResult {
   questions: AIQuestion[];
@@ -191,6 +201,8 @@ function delay(ms: number): Promise<void> {
  */
 export async function parseWithAI(text: string, retryCount = 0): Promise<AIParseResult> {
   try {
+    assertAIConfigured();
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
 
@@ -273,6 +285,92 @@ export async function parseWithAI(text: string, retryCount = 0): Promise<AIParse
 
     const errorMsg = error instanceof Error ? error.message : '未知错误';
     console.error(`❌ AI解析失败: ${errorMsg}`);
+    return {
+      questions: [],
+      error: error instanceof Error ? error.message : '未知错误',
+    };
+  }
+}
+
+/**
+ * 调用支持视觉能力的 OpenAI-compatible API，从截图/照片中提取题目并结构化。
+ */
+export async function parseImageWithAI(imageDataUrl: string, retryCount = 0): Promise<AIParseResult> {
+  try {
+    assertAIConfigured();
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 45000);
+
+    const response = await fetch(`${AI_CONFIG.baseUrl}/v1/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${AI_CONFIG.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: AI_CONFIG.model,
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: '请先识别图片中的题目文字，再按要求解析为结构化 JSON。若图片包含多道题，请全部提取。',
+              },
+              {
+                type: 'image_url',
+                image_url: { url: imageDataUrl },
+              },
+            ],
+          },
+        ],
+        temperature: 0.1,
+        max_tokens: 4096,
+      }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      if (response.status === 503 && retryCount < AI_CONFIG.maxRetries) {
+        await delay(AI_CONFIG.retryDelay * (retryCount + 1));
+        return parseImageWithAI(imageDataUrl, retryCount + 1);
+      }
+      throw new Error(`AI 图片解析请求失败 [${response.status}]: ${errorData.substring(0, 200)}`);
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content;
+    if (!content) {
+      if (retryCount < AI_CONFIG.maxRetries) {
+        await delay(AI_CONFIG.retryDelay * (retryCount + 1));
+        return parseImageWithAI(imageDataUrl, retryCount + 1);
+      }
+      throw new Error('AI 未返回图片解析结果，请换一张更清晰的图片或稍后重试。');
+    }
+
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error(`AI 返回格式错误，无法解析为 JSON。返回内容: ${content.substring(0, 200)}...`);
+    }
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    return {
+      questions: (parsed.questions || []).map((q: any) => normalizeQuestion(q)),
+      rawResponse: content,
+    };
+  } catch (error) {
+    if (error instanceof Error &&
+        (error.name === 'AbortError' || error.message.includes('fetch')) &&
+        retryCount < AI_CONFIG.maxRetries) {
+      await delay(AI_CONFIG.retryDelay * (retryCount + 1));
+      return parseImageWithAI(imageDataUrl, retryCount + 1);
+    }
+
     return {
       questions: [],
       error: error instanceof Error ? error.message : '未知错误',

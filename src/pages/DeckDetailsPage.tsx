@@ -3,6 +3,8 @@ import { ArrowLeft, Filter, BookOpen, Clock, CheckCircle, AlertCircle, Download,
 import Button from '../components/ui/Button';
 import { cn } from '../lib/utils';
 import { dialog } from '../components/ui/ConfirmDialog';
+import { cardOperations, questionOperations } from '../lib/database';
+import { refreshQueries } from '../hooks/useAsyncQuery';
 import type { Deck, Question, Card as FlashCard } from '../types';
 
 interface DeckDetailsPageProps {
@@ -176,8 +178,6 @@ export default function DeckDetailsPage({ deck, questions, cards, initialFilter 
     setIsSavingQuestion(true);
     setSaveMessage(null);
     try {
-      const { questionOperations } = await import('../lib/database');
-      const { refreshQueries } = await import('../hooks/useAsyncQuery');
       const correctAnswerIds = editOptions.filter(opt => opt.isCorrect).map(opt => opt.id);
       const newAnswer = editQuestionType === 'MULTI' ? correctAnswerIds : correctAnswerIds[0] || '';
       const newOptions = editOptions.map(opt => ({ id: opt.id, content: { text: opt.content }, isCorrect: opt.isCorrect }));
@@ -205,8 +205,6 @@ export default function DeckDetailsPage({ deck, questions, cards, initialFilter 
     if (!confirmed) return;
     setDeletingQuestionId(questionId);
     try {
-      const { questionOperations, cardOperations } = await import('../lib/database');
-      const { refreshQueries } = await import('../hooks/useAsyncQuery');
       await cardOperations.deleteByQuestionId(questionId);
       await questionOperations.delete(questionId);
       if (selectedQuestion?.id === questionId) setSelectedQuestion(null);

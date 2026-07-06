@@ -17,9 +17,14 @@ export default defineConfig({
   base: './',
   server: {
     port: 5173,
+    host: '0.0.0.0',
+    hmr: {
+      host: process.env.VITE_HMR_HOST || 'localhost',
+      clientPort: Number(process.env.VITE_HMR_CLIENT_PORT || 5173),
+    },
     proxy: {
       '/api': {
-        target: 'http://localhost:3001',
+        target: process.env.VITE_API_PROXY_TARGET || 'http://localhost:3001',
         changeOrigin: true,
       },
     },
@@ -27,5 +32,20 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react')) return 'react';
+            if (id.includes('recharts')) return 'charts';
+            if (id.includes('xlsx')) return 'excel';
+            if (id.includes('i18next')) return 'i18n';
+            if (id.includes('dexie') || id.includes('zustand')) return 'storage';
+            if (id.includes('lucide-react')) return 'icons';
+          }
+        },
+      },
+    },
+    chunkSizeWarningLimit: 900,
   },
 })

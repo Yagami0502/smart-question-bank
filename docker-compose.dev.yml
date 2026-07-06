@@ -1,0 +1,71 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: question-bank-mysql-dev
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: smart_question_bank
+      MYSQL_USER: app_user
+      MYSQL_PASSWORD: app_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_dev_data:/var/lib/mysql
+      - ./server/db/schema.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    image: node:22-bookworm-slim
+    container_name: question-bank-api-dev
+    working_dir: /app
+    restart: unless-stopped
+    command: sh -c "npm install && npm run dev"
+    ports:
+      - "3002:3001"
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: app_user
+      DB_PASSWORD: app_password
+      DB_NAME: smart_question_bank
+      PORT: 3001
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
+      LOG_FORMAT: dev
+    volumes:
+      - ./server:/app
+      - api_dev_node_modules:/app/node_modules
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  web:
+    image: node:22-bookworm-slim
+    container_name: question-bank-web-dev
+    working_dir: /app
+    restart: unless-stopped
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    ports:
+      - "5200:5173"
+    environment:
+      VITE_API_PROXY_TARGET: http://api:3001
+      VITE_HMR_HOST: localhost
+      VITE_HMR_CLIENT_PORT: 5200
+      CHOKIDAR_USEPOLLING: "true"
+    volumes:
+      - .:/app
+      - web_dev_node_modules:/app/node_modules
+    depends_on:
+      - api
+
+volumes:
+  mysql_dev_data:
+  api_dev_node_modules:
+  web_dev_node_modules:

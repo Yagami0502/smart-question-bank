@@ -11,7 +11,8 @@ import { db, deckOperations, questionOperations, cardOperations, reviewLogOperat
 import { scheduleCard, ratingMap } from '../lib/sm2';
 import { weightedSample, shuffleArray, filterDifficultCards } from '../lib/weighted-sampling';
 import { refreshQueries } from '../hooks/useAsyncQuery';
-import { isLoggedIn } from '../lib/auth';
+import { authFetch, isLoggedIn } from '../lib/auth';
+import { extractTags } from '../lib/ai-service';
 import type { SimpleRating } from '../types';
 
 function getDefaultTagFromDeckName(deckName: string): string {
@@ -182,7 +183,6 @@ export const useAppStore = create<AppStore>()(
               const baseTags = defaultTag ? [defaultTag, ...existingTags] : [...existingTags];
 
               try {
-                const { extractTags } = await import('../lib/ai-service');
                 const generatedTags = await extractTags([{
                   content: typeof q.content === 'string' ? q.content : q.content.text,
                   type: q.type,
@@ -676,7 +676,6 @@ export const useAppStore = create<AppStore>()(
         if (!isLoggedIn()) return;
 
         try {
-          const { authFetch } = await import('../lib/auth');
           const response = await authFetch('/api/user-settings');
 
           if (!response.ok) {
@@ -720,7 +719,6 @@ export const useAppStore = create<AppStore>()(
         if (!isLoggedIn()) return;
 
         try {
-          const { authFetch } = await import('../lib/auth');
           const { settings } = get();
 
           const response = await authFetch('/api/user-settings', {

@@ -1,7 +1,7 @@
 {
   "name": "mindforge",
   "version": "1.0.0",
-  "description": "MindForge - 智能刷题系统，支持多格式导入与针对性强化训练",
+  "description": "MindForge - 面向校园学习场景的 AI 智能题库与复习平台",
   "type": "module",
   "scripts": {
     "dev": "vite",

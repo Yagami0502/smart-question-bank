@@ -19,8 +19,8 @@ import { dialog } from '../components/ui/ConfirmDialog';
 import { useAppStore } from '../stores/appStore';
 import { parseCSV, parseExcel, suggestColumnMapping, importFromSpreadsheet } from '../lib/parsers/csv-parser';
 import { autoParseText } from '../lib/parsers/text-parser';
-import { parseWithAIBatch } from '../lib/ai-service';
-import { readFileContent, readFileAsArrayBuffer, cn } from '../lib/utils';
+import { parseImageWithAI, parseWithAIBatch } from '../lib/ai-service';
+import { readFileContent, readFileAsArrayBuffer, readFileAsDataURL, cn } from '../lib/utils';
 import type { Deck, ColumnMapping, Question } from '../types';
 
 // 定义 ParsedRow 类型
@@ -48,18 +48,41 @@ export default function ImportPage({ deck, onBack }: ImportPageProps) {
   
   const { importQuestions } = useAppStore();
 
-  const getFileType = (fileName: string): 'csv' | 'excel' | 'text' | null => {
+  const getFileType = (fileName: string): 'csv' | 'excel' | 'text' | 'image' | null => {
     const ext = fileName.toLowerCase().split('.').pop();
     if (ext === 'csv') return 'csv';
     if (ext === 'xlsx' || ext === 'xls') return 'excel';
     if (ext === 'txt' || ext === 'md') return 'text';
+    if (['png', 'jpg', 'jpeg', 'webp'].includes(ext || '')) return 'image';
     return null;
   };
+
+  const convertAIQuestions = (aiQuestions: Awaited<ReturnType<typeof parseWithAIBatch>>['questions']): Question[] => (
+    aiQuestions.map((q, index) => ({
+      id: `ai-${Date.now()}-${index}`,
+      deckId: deck.id,
+      type: q.type,
+      content: { text: q.content },
+      options: q.options.map((opt, i) => ({
+        id: String.fromCharCode(65 + i),
+        content: { text: opt },
+        isCorrect: Array.isArray(q.correctAnswer) 
+          ? q.correctAnswer.includes(String.fromCharCode(65 + i))
+          : q.correctAnswer === String.fromCharCode(65 + i)
+      })),
+      answer: q.correctAnswer,
+      explanation: q.explanation,
+      tags: q.tags || [],
+      difficulty: q.difficulty || 3,
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    }))
+  );
 
   const handleFileSelect = useCallback(async (selectedFile: File) => {
     const type = getFileType(selectedFile.name);
     if (!type) {
-      dialog.warning('不支持的文件格式。请上传 CSV、Excel 或文本文件。');
+      dialog.warning('不支持的文件格式。请上传 CSV、Excel、文本或图片文件。');
       return;
     }
 
@@ -86,6 +109,22 @@ export default function ImportPage({ deck, onBack }: ImportPageProps) {
         const result = autoParseText(content, deck.id);
         setQuestions(result.questions);
         setImportErrors(result.errors);
+        setStep('preview');
+      } else if (type === 'image') {
+        setAiProgress({ current: 1, total: 1 });
+        const imageDataUrl = await readFileAsDataURL(selectedFile);
+        const result = await parseImageWithAI(imageDataUrl);
+        if (result.error) {
+          setAiError(result.error);
+          dialog.error(result.error);
+          return;
+        }
+        if (result.questions.length === 0) {
+          dialog.warning('未能从图片中识别出题目，请上传更清晰的截图或照片。');
+          return;
+        }
+        setQuestions(convertAIQuestions(result.questions));
+        setImportErrors([]);
         setStep('preview');
       }
     } catch (error) {
@@ -169,28 +208,7 @@ export default function ImportPage({ deck, onBack }: ImportPageProps) {
       }
 
       if (result.questions.length > 0) {
-        // 转换AI解析结果为Question格式
-        const convertedQuestions: Question[] = result.questions.map((q, index) => ({
-          id: `ai-${Date.now()}-${index}`,
-          deckId: deck.id,
-          type: q.type,
-          content: { text: q.content },
-          options: q.options.map((opt, i) => ({
-            id: String.fromCharCode(65 + i),
-            content: { text: opt },
-            isCorrect: Array.isArray(q.correctAnswer) 
-              ? q.correctAnswer.includes(String.fromCharCode(65 + i))
-              : q.correctAnswer === String.fromCharCode(65 + i)
-          })),
-          answer: q.correctAnswer,
-          explanation: q.explanation,
-          tags: q.tags || [],
-          difficulty: q.difficulty || 3,
-          createdAt: Date.now(),
-          updatedAt: Date.now()
-        }));
-
-        setQuestions(convertedQuestions);
+        setQuestions(convertAIQuestions(result.questions));
         setStep('preview');
       } else if (!result.error) {
         setAiError('未能解析出任何题目，请检查输入内容格式');
@@ -305,7 +323,7 @@ D. Apple
       <Card>
         <CardHeader>
           <h2 className="text-xl font-semibold">上传题目文件</h2>
-          <p className="text-gray-500 mt-1">支持 CSV、Excel 和纯文本格式</p>
+          <p className="text-gray-500 mt-1">支持 CSV、Excel、纯文本和截图/照片格式</p>
         </CardHeader>
         <CardContent>
           {/* Drop Zone */}
@@ -322,7 +340,7 @@ D. Apple
             <input
               id="file-input"
               type="file"
-              accept=".csv,.xlsx,.xls,.txt,.md"
+              accept=".csv,.xlsx,.xls,.txt,.md,.png,.jpg,.jpeg,.webp"
               className="hidden"
               onChange={(e) => {
                 const f = e.target.files?.[0];
@@ -331,7 +349,7 @@ D. Apple
             />
             <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-600 mb-2">拖拽文件到这里，或点击选择文件</p>
-            <p className="text-sm text-gray-400">支持 .csv, .xlsx, .txt, .md 格式</p>
+            <p className="text-sm text-gray-400">支持 .csv, .xlsx, .txt, .md, .png, .jpg, .webp 格式</p>
           </div>
 
           {/* Format Examples */}
@@ -357,10 +375,10 @@ D. Apple
             <div className="p-4 bg-gray-50 rounded-xl">
               <div className="flex items-center gap-2 mb-2">
                 <File className="w-5 h-5 text-purple-600" />
-                <span className="font-medium">Markdown</span>
+                <span className="font-medium">截图/照片</span>
               </div>
               <p className="text-xs text-gray-500">
-                使用 ## 标题和 checkbox 列表定义题目和选项。
+                上传老师发的题目截图，AI 先识别文字，再整理成可练习题库。
               </p>
             </div>
           </div>
