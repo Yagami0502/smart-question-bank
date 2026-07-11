@@ -3,6 +3,7 @@
  */
 const express = require('express');
 const { extractWordText } = require('../lib/word-extractor');
+const { runQuestionAgent } = require('../lib/question-agents');
 
 const router = express.Router();
 
@@ -21,6 +22,23 @@ router.post('/word/extract', express.raw({ type: '*/*', limit: '20mb' }), async 
   } catch (error) {
     console.error('Word 文本抽取失败:', error);
     res.status(400).json({ error: error.message || 'Word 文本抽取失败' });
+  }
+});
+
+router.post('/agents/run', async (req, res, next) => {
+  try {
+    const { stage, payload, model, baseURL } = req.body || {};
+    if (!stage || !payload) return res.status(400).json({ error: '缺少智能体阶段或输入数据' });
+    const output = await runQuestionAgent({
+      stage,
+      payload,
+      model,
+      baseURL,
+      apiKey: req.headers['x-openai-api-key'],
+    });
+    res.json(output);
+  } catch (error) {
+    next(error);
   }
 });
 

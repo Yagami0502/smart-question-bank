@@ -30,7 +30,7 @@ export interface UserAISettings {
 // 默认 AI 配置
 const DEFAULT_AI_CONFIG: AIConfig = {
   baseUrl: (import.meta.env.VITE_AI_BASE_URL as string | undefined) || 'https://api.openai.com',
-  model: (import.meta.env.VITE_AI_MODEL as string | undefined) || 'gpt-4o-mini',
+  model: (import.meta.env.VITE_AI_MODEL as string | undefined) || 'gpt-5.4-mini',
   apiKey: '',
   maxRetries: 3,
   retryDelay: 2000,
